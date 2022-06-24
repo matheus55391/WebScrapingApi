@@ -2,19 +2,20 @@ const puppeteer = require('puppeteer');
 const morgan = require('morgan');
 const express = require('express')
 const app = express()
-
 app.use(express.urlencoded({extended: true}))
 app.use(express.json())
 app.use(morgan('dev'))
 app.get('/favicon.ico', (req, res) => res.status(204));
 
-app.get('/produto', async (req, res, next)=>{
+
+app.get('/script', async (req, res, next)=>{
         try{
             const url = req.body.url
-            const browser = await puppeteer.launch({headless: false});
+            const script = req.body.script
+            const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox'],});
             const page = await browser.newPage();
             await page.goto(url)
-            const value = await page.evaluate('document.querySelectorAll(".MuiGrid-grid-sm-5>div")[1].querySelectorAll("div")[0].querySelectorAll("div")[0].querySelectorAll("div")[2].querySelectorAll("div")[1].innerText');
+            const value = await page.evaluate(script);
             await browser.close();
             return await res.send(value);
 
