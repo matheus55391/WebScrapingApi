@@ -9,20 +9,26 @@ app.get('/favicon.ico', (req, res) => res.status(204));
 
 
 app.get('/script', async (req, res, next)=>{
+        const browser = await puppeteer.launch({headless: false, args: ['--no-sandbox'],});
         try{
             const url = req.body.url
             const script = req.body.script
-            const browser = await puppeteer.launch({headless: true, args: ['--no-sandbox'],});
             const page = await browser.newPage();
-            await page.goto(url)
+            await page.goto(url, {waitUntil: 'networkidle0'})
+            //await page.reload();
+            //const html = await page.content(); // serialized HTML of page DOM.
+            //await page.screenshot({path: 'screenshot.png'});
             const value = await page.evaluate(script);
-            await browser.close();
             return await res.send(value);
 
-        }catch (e) {
+        }
+        catch (e) {
             next(e);
-        }       
-})
+        }   
+        finally {
+            browser.close();
+        }
+})  
 
 app.use((req, res, next) =>{ 
     const error = new Error('Não encontrado')
